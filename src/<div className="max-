@@ -1,0 +1,201 @@
+function HomeView() {
+    const featured = courses.slice(0, 3);
+    return (
+      <div>
+        <section className="pt-14 pb-10 relative overflow-hidden">
+          <div
+            className="absolute inset-0 -z-10 opacity-[0.06]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(45deg, #1B3A5C 0, #1B3A5C 1px, transparent 1px, transparent 22px)",
+            }}
+          />
+          <Pill tone="branch">مرحبًا بك</Pill>
+          <h1 className="amiri text-4xl md:text-5xl font-bold text-[#1B3A5C] mt-4 leading-tight">
+            اُتقن لغة الضاد… درسًا بعد درس
+          </h1>
+          <p className="text-[#4a4438] mt-4 max-w-xl leading-8">
+            منصة متكاملة لتعلّم النحو والصرف والبلاغة والأدب والإملاء، بإشراف مدرسين متخصصين،
+            مع تمارين تفاعلية وشهادات إتمام لكل وحدة دراسية تنجزها.
+          </p>
+          <div className="flex gap-3 mt-7 flex-wrap">
+            <button onClick={() => goto("courses")} className="px-6 py-3 rounded-full bg-[#1B3A5C] text-white font-bold hover:bg-[#274F7A] transition-colors flex items-center gap-2">
+              تصفّح الوحدات الدراسية <ChevronLeft size={18} />
+            </button>
+            {!authed && (
+              <button onClick={() => goto("login")} className="px-6 py-3 rounded-full border-2 border-[#1B3A5C] text-[#1B3A5C] font-bold hover:bg-[#1B3A5C] hover:text-white transition-colors">
+                إنشاء حساب مجانًا
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mt-10 max-w-md">
+            {[["٤", "فروع لغوية"], ["١٢+", "درسًا تفاعليًا"], ["٩٧٪", "رضا المتعلمين"]].map(([n, l]) => (
+              <div key={l}>
+                <div className="amiri text-2xl font-bold text-[#C9A24B]">{n}</div>
+                <div className="text-xs text-[#6b6355] mt-1">{l}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="py-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="amiri text-2xl font-bold text-[#1B3A5C]">وحدات مميزة</h2>
+            <button onClick={() => goto("courses")} className="text-sm font-bold text-[#2E6E62] flex items-center gap-1">
+              عرض الكل <ChevronLeft size={14} />
+            </button>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {featured.map((c) => <CourseCard key={c.id} course={c} />)}
+          </div>
+        </section>
+
+        <section className="py-10">
+          <h2 className="amiri text-2xl font-bold text-[#1B3A5C] mb-5">فروع اللغة العربية</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {BRANCHES.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => { setBranchFilter(b.id); goto("courses"); }}
+                className="p-4 rounded-2xl bg-white border border-[#E7DFC8] hover:border-[#C9A24B] hover:shadow-md transition-all text-center"
+              >
+                <div className="amiri text-xl font-bold text-[#1B3A5C]">{b.label}</div>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  function CourseCard({ course }) {
+    const isEnrolled = enrolled.includes(course.id);
+    return (
+      <button onClick={() => openCourse(course.id)} className="text-right bg-white rounded-2xl border border-[#E7DFC8] overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all">
+        <div className="h-28 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${course.color}, ${course.color}CC)` }}>
+          <span className="amiri text-3xl text-white/90 font-bold">{BRANCH_LABEL(course.branch)}</span>
+        </div>
+        <div className="p-4">
+          <div className="flex gap-2 mb-2">
+            <Pill tone="branch">{BRANCH_LABEL(course.branch)}</Pill>
+            <Pill tone="level">{LEVEL_LABEL(course.level)}</Pill>
+          </div>
+          <h3 className="font-bold text-[#1B3A5C] leading-snug">{course.title}</h3>
+          <p className="text-xs text-[#8a7a58] mt-1">{course.instructor}</p>
+          <div className="flex items-center justify-between mt-3">
+            <StarRow rating={course.rating} />
+            {isEnrolled && <span className="text-xs font-bold text-[#2E6E62] flex items-center gap-1"><CheckCircle2 size={13}/> مسجَّل</span>}
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  function LoginView() {
+    const [name, setName] = useState("");
+    const [mode, setMode] = useState("login");
+    const [chosenRole, setChosenRole] = useState("student");
+
+    return (
+      <div className="max-w-md mx-auto py-14">
+        <div className="bg-white border border-[#E7DFC8] rounded-2xl p-7 shadow-sm">
+          <div className="text-center mb-6">
+            <Logo />
+          </div>
+          <div className="flex bg-[#F3EEDF] rounded-full p-1 mb-6">
+            {["login", "signup"].map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={`flex-1 py-2 rounded-full text-sm font-bold transition-colors ${mode === m ? "bg-white text-[#1B3A5C] shadow-sm" : "text-[#8a7a58]"}`}
+              >
+                {m === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
+              </button>
+            ))}
+          </div>
+
+          {mode === "signup" && (
+            <div className="mb-4">
+              <label className="text-sm font-bold text-[#3c4550] mb-1.5 block">الاسم الكامل</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اكتب اسمك"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#E7DFC8] focus:outline-none focus:ring-2 focus:ring-[#C9A24B]" />
+            </div>
+          )}
+
+          <div className="mb-4">
+            <label className="text-sm font-bold text-[#3c4550] mb-1.5 block">البريد الإلكتروني</label>
+            <input type="email" placeholder="example@mail.com" dir="ltr"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E7DFC8] focus:outline-none focus:ring-2 focus:ring-[#C9A24B] text-left" />
+          </div>
+          <div className="mb-4">
+            <label className="text-sm font-bold text-[#3c4550] mb-1.5 block">كلمة المرور</label>
+            <input type="password" placeholder="••••••••" dir="ltr"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E7DFC8] focus:outline-none focus:ring-2 focus:ring-[#C9A24B] text-left" />
+          </div>
+
+          {mode === "signup" && (
+            <div className="mb-5">
+              <label className="text-sm font-bold text-[#3c4550] mb-1.5 block">أرغب في الانضمام كـ</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[["student", "طالب"], ["instructor", "مدرس"], ["admin", "مشرف"]].map(([id, label]) => (
+                  <button key={id} onClick={() => setChosenRole(id)}
+                    className={`py-2 rounded-xl text-sm font-bold border-2 transition-colors ${chosenRole === id ? "border-[#1B3A5C] bg-[#1B3A5C] text-white" : "border-[#E7DFC8] text-[#3c4550]"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => login(name, mode === "signup" ? chosenRole : "student")}
+            className="w-full py-3 rounded-xl bg-[#1B3A5C] text-white font-bold hover:bg-[#274F7A] transition-colors"
+          >
+            {mode === "login" ? "دخول" : "إنشاء الحساب والدخول"}
+          </button>
+
+          {mode === "login" && (
+            <p className="text-xs text-center text-[#8a7a58] mt-4">
+              هذا عرض تجريبي — يمكنك الدخول مباشرة بأي بيانات لتجربة دور الطالب، أو اختر «إنشاء حساب» لتجربة دور المدرس أو المشرف.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function CoursesView() {
+    return (
+      <div className="py-8">
+        <h1 className="amiri text-3xl font-bold text-[#1B3A5C] mb-1">كل الوحدات الدراسية</h1>
+        <p className="text-[#6b6355] mb-6">اختر الفرع والمستوى المناسبين لك</p>
+
+        <div className="bg-white border border-[#E7DFC8] rounded-2xl p-4 mb-6 flex flex-col md:flex-row gap-3">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-[#E7DFC8]">
+            <Search size={16} className="text-[#8a7a58]" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="ابحث عن وحدة دراسية..."
+              className="flex-1 bg-transparent focus:outline-none text-sm" />
+          </div>
+          <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-[#E7DFC8] text-sm bg-white">
+            <option value="all">كل الفروع</option>
+            {BRANCHES.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
+          </select>
+          <select value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-[#E7DFC8] text-sm bg-white">
+            <option value="all">كل المستويات</option>
+            {LEVELS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+          </select>
+        </div>
+
+        {filteredCourses.length === 0 ? (
+          <EmptyState icon={Filter} title="لا توجد نتائج مطابقة" hint="جرّب تغيير كلمات البحث أو الفلاتر" />
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredCourses.map((c) => <CourseCard key={c.id} course={c} />)}
+          </div>
+        )}
+      </div>
+    );
+  }
